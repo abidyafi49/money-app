@@ -1,0 +1,81 @@
+{% extends "base.html" %} {% block title %}Dashboard{% endblock %} {% block
+content %}
+<div class="bg-white rounded-xl shadow p-6 mb-6 text-center">
+  <p class="text-gray-500 text-sm">Balance</p>
+  <p class="text-3xl font-bold text-gray-800">{{ balance }}</p>
+</div>
+
+<h2 class="text-lg font-semibold text-gray-700 mb-2">Transactions</h2>
+<ul class="space-y-2 mb-6">
+  {% for t in transactions %}
+  <li class="bg-white rounded-lg shadow p-3 flex justify-between items-center">
+    <span class="text-sm text-gray-700">
+      <span
+        class="font-medium {{ 'text-green-600' if t.type == 'income' else 'text-red-600' }}"
+      >
+        {{ t.amount }}
+      </span>
+      · {{ t.category }}
+    </span>
+    <span class="flex gap-2">
+      <a
+        href="{{ url_for('main.edit_form', t_id=t.id) }}"
+        class="text-xs bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md"
+        >Edit</a
+      >
+      <a
+        href="{{ url_for('main.delete', t_id=t.id) }}"
+        class="text-xs bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md"
+        >Delete</a
+      >
+    </span>
+  </li>
+  {% endfor %}
+</ul>
+
+<h2 class="text-lg font-semibold text-gray-700 mb-2">Spending by Category</h2>
+<ul class="space-y-2 mb-6">
+  {% for category, amount in totals.items() %}
+  <li class="bg-white rounded-lg shadow p-3 flex justify-between text-sm">
+    <span class="text-gray-600">{{ category }}</span>
+    <span class="font-medium text-gray-800">{{ amount }}</span>
+  </li>
+  {% endfor %}
+</ul>
+
+<h2 class="text-lg font-semibold text-gray-700 mb-2">Add Transaction</h2>
+<form
+  action="{{ url_for('main.add') }}"
+  method="POST"
+  class="bg-white rounded-xl shadow p-4 space-y-3"
+>
+  <input
+    type="number"
+    name="amount"
+    step="0.01"
+    placeholder="Amount"
+    required
+    class="w-full border border-gray-300 rounded-md p-2 text-sm"
+  />
+  <select
+    name="t_type"
+    class="w-full border border-gray-300 rounded-md p-2 text-sm"
+  >
+    <option value="income">Income</option>
+    <option value="expense">Expense</option>
+  </select>
+  <input
+    type="text"
+    name="category"
+    placeholder="Category"
+    required
+    class="w-full border border-gray-300 rounded-md p-2 text-sm"
+  />
+  <button
+    type="submit"
+    class="w-full bg-gray-800 hover:bg-gray-900 text-white py-2 rounded-md text-sm font-medium"
+  >
+    Add
+  </button>
+</form>
+{% endblock %}

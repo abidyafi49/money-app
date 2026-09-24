@@ -1,0 +1,44 @@
+{% extends "base.html" %} {% block title %}Edit Transaction{% endblock %} {%
+block content %}
+<h1 class="text-lg font-semibold text-gray-700 mb-4">Edit Transaction</h1>
+
+<form
+  action="{{ url_for('main.update', t_id=transaction.id) }}"
+  method="POST"
+  class="bg-white rounded-xl shadow p-4 space-y-3"
+>
+  <input
+    type="number"
+    name="amount"
+    step="0.01"
+    value="{{ transaction.amount }}"
+    required
+    class="w-full border border-gray-300 rounded-md p-2 text-sm"
+  />
+  <select
+    name="t_type"
+    class="w-full border border-gray-300 rounded-md p-2 text-sm"
+  >
+    {% if transaction.type == "income" %}
+    <option value="income" selected>Income</option>
+    <option value="expense">Expense</option>
+    {% else %}
+    <option value="income">Income</option>
+    <option value="expense" selected>Expense</option>
+    {% endif %}
+  </select>
+  <input
+    type="text"
+    name="category"
+    value="{{ transaction.category }}"
+    required
+    class="w-full border border-gray-300 rounded-md p-2 text-sm"
+  />
+  <button
+    type="submit"
+    class="w-full bg-gray-800 hover:bg-gray-900 text-white py-2 rounded-md text-sm font-medium"
+  >
+    Save Changes
+  </button>
+</form>
+{% endblock %}
