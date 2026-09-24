@@ -1,6 +1,6 @@
 __pycache__/
 *.pyc
-transactions.json
+data/
 venv/
 .vscode/
 app/__pycache__/
