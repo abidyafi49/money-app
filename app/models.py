@@ -146,3 +146,58 @@ def get_today_stats():
     return {"income": income, "expense": expense}
 
 #end of homepage
+
+# History Page
+def get_filtered_transactions(filter_type="all", date_str=None, date_from=None, date_to=None):
+    today = datetime.now().date()
+    result = []
+
+    for t in sorted(transactions, key=lambda x: x.get("date", ""), reverse=True):
+        t_date_str = t.get("date", "")
+        if not t_date_str:
+            continue
+
+        try:
+            t_date = datetime.strptime(t_date_str, "%Y-%m-%d").date()
+        except ValueError:
+            continue
+
+        if date_str:
+            if t_date_str == date_str:
+                result.append(t)
+        elif date_from and date_to:
+            from_date = datetime.strptime(date_from, "%Y-%m-%d").date()
+            to_date = datetime.strptime(date_to, "%Y-%m-%d").date()
+            if from_date <= t_date <= to_date:
+                result.append(t)
+        elif date_from:
+            from_date = datetime.strptime(date_from, "%Y-%m-%d").date()
+            if t_date == from_date:
+                result.append(t)
+        elif filter_type == "today":
+            if t_date == today:
+                result.append(t)
+        elif filter_type == "week":
+            if today - timedelta(days=7) <= t_date <= today:
+                result.append(t)
+        elif filter_type == "month":
+            if t_date.year == today.year and t_date.month == today.month:
+                result.append(t)
+        elif filter_type == "year":
+            if t_date.year == today.year:
+                result.append(t)
+        else:
+            result.append(t)
+
+    return result
+
+def group_transactions_by_date(transaction_list):
+    groups = {}
+    for t in transaction_list:
+        date = t.get("date", "Unknown")
+        if date not in groups:
+            groups[date] = []
+        groups[date].append(t)
+    return groups
+
+#end of history

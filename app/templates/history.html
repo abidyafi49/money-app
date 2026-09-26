@@ -1,51 +1,206 @@
-{% extends "base.html" %} {% block title %}History{% endblock %} {% block
-top_nav_title %}History{% endblock %} {% block top_tabs %}
+{% extends "base.html" %}
+
+{% block title %}History{% endblock %}
+
+{% block top_nav_title %}
+{% if date_str %}{{ date_str }}{% else %}History{% endif %}
+{% endblock %}
+
+{% block top_tabs %}
+{% if not date_str %}
 <div class="bg-white border-b border-gray-200 sticky top-14 z-10">
-  <div class="max-w-xl mx-auto flex">
-    <a
-      href="{{ url_for('main.history') }}?filter=all"
-      class="flex-1 text-center py-3 text-sm font-medium {{ 'border-b-2 border-gray-800 text-gray-800' if filter_type == 'all' else 'text-gray-400' }}"
-      >All</a
-    >
-    <a
-      href="{{ url_for('main.history') }}?filter=income"
-      class="flex-1 text-center py-3 text-sm font-medium {{ 'border-b-2 border-green-500 text-green-500' if filter_type == 'income' else 'text-gray-400' }}"
-      >Income</a
-    >
-    <a
-      href="{{ url_for('main.history') }}?filter=outcome"
-      class="flex-1 text-center py-3 text-sm font-medium {{ 'border-b-2 border-red-500 text-red-500' if filter_type == 'outcome' else 'text-gray-400' }}"
-      >Outcome</a
-    >
+  <div class="max-w-xl mx-auto flex items-center justify-center overflow-x-auto">
+    {% set tabs = [('today','Today'),('week','This Week'),('month','This Month'),('year','This Year'),('all','All'),('custom','Custom')] %}
+    {% for value, label in tabs %}
+      {% if value == 'custom' %}
+        {% set tab_href = '#' %}
+      {% else %}
+        {% set tab_href = url_for('main.history', filter=value) %}
+      {% endif %}
+      <a href="{{ tab_href }}"
+         {% if value == 'custom' %}onclick="toggleCustomFilter(event)"{% endif %}
+         class="shrink-0 px-4 py-3 text-sm font-medium whitespace-nowrap {{ 'border-b-2 border-blue-500 text-blue-600' if filter_type == value else 'text-gray-400' }}">
+        {% if value == 'custom' %}<i class="fa-solid fa-calendar-days mr-1"></i>{% endif %}
+        {{ label }}
+      </a>
+    {% endfor %}
+  </div>
+
+  <div id="custom-filter-panel" class="{{ '' if filter_type == 'custom' else 'hidden' }} max-w-xl mx-auto p-4 border-t border-gray-100 bg-gray-50">
+    <div class="flex rounded-lg overflow-hidden border border-gray-200 mb-4">
+      <button onclick="switchMode('single')" id="btn-single"
+              class="flex-1 py-2 text-sm font-medium transition-colors {{ 'bg-blue-500 text-white' if not date_to else 'bg-white text-gray-500' }}">
+        <i class="fa-solid fa-calendar-day mr-1"></i>Single Date
+      </button>
+      <button onclick="switchMode('range')" id="btn-range"
+              class="flex-1 py-2 text-sm font-medium transition-colors {{ 'bg-blue-500 text-white' if date_to else 'bg-white text-gray-500' }}">
+        <i class="fa-solid fa-calendar-week mr-1"></i>Date Range
+      </button>
+    </div>
+
+    <form id="form-single" action="{{ url_for('main.history') }}" method="GET" class="{{ 'hidden' if date_to else '' }}">
+      <input type="hidden" name="filter" value="custom">
+      <div class="mb-3">
+        <label class="text-xs text-gray-500 block mb-1">Select Date</label>
+        <input type="date" name="date_from" value="{{ date_from or '' }}" class="w-full border border-gray-300 rounded-lg p-2 text-sm">
+      </div>
+      <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded-lg text-sm font-medium">
+        <i class="fa-solid fa-magnifying-glass mr-1"></i>Show Transactions
+      </button>
+    </form>
+
+    <form id="form-range" action="{{ url_for('main.history') }}" method="GET" class="{{ '' if date_to else 'hidden' }}">
+      <input type="hidden" name="filter" value="custom">
+      <div class="grid grid-cols-2 gap-3 mb-3">
+        <div>
+          <label class="text-xs text-gray-500 block mb-1">From</label>
+          <input type="date" name="date_from" value="{{ date_from or '' }}" class="w-full border border-gray-300 rounded-lg p-2 text-sm">
+        </div>
+        <div>
+          <label class="text-xs text-gray-500 block mb-1">To</label>
+          <input type="date" name="date_to" value="{{ date_to or '' }}" class="w-full border border-gray-300 rounded-lg p-2 text-sm">
+        </div>
+      </div>
+      <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded-lg text-sm font-medium">
+        <i class="fa-solid fa-magnifying-glass mr-1"></i>Show Transactions
+      </button>
+    </form>
+
+    {% if date_from %}
+    <div class="mt-3 flex justify-between items-center bg-blue-50 rounded-lg p-2">
+      <p class="text-xs text-blue-600">
+        <i class="fa-solid fa-filter mr-1"></i>
+        {% if date_to %}{{ date_from }} → {{ date_to }}{% else %}{{ date_from }}{% endif %}
+      </p>
+      <a href="{{ url_for('main.history') }}" class="text-xs text-red-500 font-medium">
+        <i class="fa-solid fa-xmark mr-1"></i>Clear
+      </a>
+    </div>
+    {% endif %}
   </div>
 </div>
-{% endblock %} {% block content %}
-<ul class="space-y-2">
-  {% for t in transactions %}
-  <li class="bg-white rounded-lg shadow p-3 flex justify-between items-center">
-    <span class="text-sm text-gray-700">
-      <span
-        class="font-medium {{ 'text-green-600' if t.type == 'income' else 'text-red-600' }}"
-      >
-        {{ '+' if t.type == 'income' else '-' }}{{ t.amount }}
-      </span>
-      · {{ t.category }}
-    </span>
-    <span class="flex gap-2">
-      <a
-        href="{{ url_for('main.edit_form', t_id=t.id) }}"
-        class="text-xs bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md"
-        >Edit</a
-      >
-      <a
-        href="{{ url_for('main.delete', t_id=t.id) }}"
-        class="text-xs bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md"
-        >Delete</a
-      >
-    </span>
-  </li>
-  {% endfor %} {% if not transactions %}
-  <li class="text-center text-gray-400 text-sm py-8">No transactions found.</li>
-  {% endif %}
-</ul>
+
+{% else %}
+<div class="bg-white border-b border-gray-200">
+  <div class="max-w-xl mx-auto px-4 py-2">
+    <a href="{{ url_for('main.history') }}" class="text-blue-500 text-sm flex items-center gap-1">
+      <i class="fa-solid fa-chevron-left"></i> Back to History
+    </a>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="bg-gradient-to-br from-blue-600 to-blue-400 text-white rounded-2xl shadow p-4 mb-4">
+  <p class="text-blue-100 text-xs mb-2">
+    {% if date_str %}{{ date_str }}
+    {% elif filter_type == 'today' %}Today
+    {% elif filter_type == 'week' %}This Week
+    {% elif filter_type == 'month' %}This Month
+    {% elif filter_type == 'year' %}This Year
+    {% elif filter_type == 'custom' %}
+      {% if date_to %}{{ date_from }} → {{ date_to }}{% else %}{{ date_from }}{% endif %}
+    {% else %}All Time{% endif %}
+  </p>
+  <div class="grid grid-cols-2 gap-4">
+    <div>
+      <p class="text-blue-100 text-xs">Income</p>
+      <p class="text-xl font-bold">+{{ total_income }}</p>
+    </div>
+    <div>
+      <p class="text-blue-100 text-xs">Outcome</p>
+      <p class="text-xl font-bold">-{{ total_expense }}</p>
+    </div>
+  </div>
+</div>
+
+{% if grouped %}
+  {% for date, day_transactions in grouped.items() %}
+    {% set day_income = day_transactions | selectattr('type','equalto','income') | map(attribute='amount') | sum %}
+    {% set day_expense = day_transactions | selectattr('type','equalto','expense') | map(attribute='amount') | sum %}
+
+    <div class="flex justify-between items-center px-1 mt-4 mb-2">
+      <p class="text-xs font-semibold text-gray-500">{{ date }}</p>
+      <div class="text-xs">
+        {% if day_income > 0 %}<span class="text-green-500 mr-2">+{{ day_income }}</span>{% endif %}
+        {% if day_expense > 0 %}<span class="text-red-500">-{{ day_expense }}</span>{% endif %}
+      </div>
+    </div>
+
+    <ul class="bg-white rounded-xl shadow overflow-hidden mb-2">
+      {% for t in day_transactions %}
+      <li class="flex justify-between items-center p-3 {{ 'border-b border-gray-100' if not loop.last }}">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 {{ 'bg-green-100' if t.type == 'income' else 'bg-red-100' }}">
+            <i class="fa-solid {{ 'fa-arrow-down text-green-500' if t.type == 'income' else 'fa-arrow-up text-red-500' }} text-sm"></i>
+          </div>
+          <div>
+            <p class="text-sm font-medium text-gray-700">{{ t.category | capitalize }}</p>
+            <p class="text-xs text-gray-400">{{ t.type | capitalize }}</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <p class="text-sm font-semibold {{ 'text-green-500' if t.type == 'income' else 'text-red-500' }}">
+            {{ '+' if t.type == 'income' else '-' }}{{ t.amount }}
+          </p>
+          <div class="flex gap-1">
+            <a href="{{ url_for('main.edit_form', t_id=t.id) }}" class="w-7 h-7 rounded-full bg-blue-50 flex items-center justify-center">
+              <i class="fa-solid fa-pen text-blue-500 text-xs"></i>
+            </a>
+            <a href="{{ url_for('main.delete', t_id=t.id) }}" class="w-7 h-7 rounded-full bg-red-50 flex items-center justify-center">
+              <i class="fa-solid fa-trash text-red-500 text-xs"></i>
+            </a>
+          </div>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+  {% endfor %}
+{% else %}
+  <div class="text-center py-16">
+    <i class="fa-solid fa-receipt text-gray-200 text-5xl mb-3"></i>
+    <p class="text-gray-400 text-sm">No transactions found.</p>
+    <a href="{{ url_for('main.add_page') }}" class="mt-3 inline-block text-blue-500 text-sm font-medium">
+      + Add one now
+    </a>
+  </div>
+{% endif %}
+
+<script>
+function toggleCustomFilter(e) {
+  e.preventDefault();
+  const panel = document.getElementById('custom-filter-panel');
+  panel.classList.toggle('hidden');
+}
+
+function switchMode(mode) {
+  const formSingle = document.getElementById('form-single');
+  const formRange = document.getElementById('form-range');
+  const btnSingle = document.getElementById('btn-single');
+  const btnRange = document.getElementById('btn-range');
+
+  if (mode === 'single') {
+    formSingle.classList.remove('hidden');
+    formRange.classList.add('hidden');
+    btnSingle.classList.add('bg-blue-500','text-white');
+    btnSingle.classList.remove('bg-white','text-gray-500');
+    btnRange.classList.add('bg-white','text-gray-500');
+    btnRange.classList.remove('bg-blue-500','text-white');
+  } else {
+    formRange.classList.remove('hidden');
+    formSingle.classList.add('hidden');
+    btnRange.classList.add('bg-blue-500','text-white');
+    btnRange.classList.remove('bg-white','text-gray-500');
+    btnSingle.classList.add('bg-white','text-gray-500');
+    btnSingle.classList.remove('bg-blue-500','text-white');
+  }
+}
+
+{% if filter_type == 'custom' %}
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('custom-filter-panel').classList.remove('hidden');
+});
+{% endif %}
+</script>
 {% endblock %}

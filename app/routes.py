@@ -4,7 +4,8 @@ from app.models import (
     get_transaction, add_transaction, update_transaction,
     delete_transaction, get_balance, spending_by_category,
     load_budgets, save_budgets, get_budgets, set_budget,
-    get_recent_transactions, get_weekly_totals, get_today_stats
+    get_recent_transactions, get_weekly_totals, get_today_stats,
+    get_filtered_transactions, group_transactions_by_date
 )
 
 main = Blueprint("main", __name__)
@@ -25,14 +26,27 @@ def home():
 def history():
     load_transactions()
     filter_type = request.args.get("filter", "all")
-    all_transactions = get_transactions()
-    if filter_type == "income":
-        filtered = [t for t in all_transactions if t["type"] == "income"]
-    elif filter_type == "outcome":
-        filtered = [t for t in all_transactions if t["type"] == "expense"]
-    else:
-        filtered = all_transactions
-    return render_template("history.html", transactions=filtered, filter_type=filter_type)
+    date_str = request.args.get("date", None)
+    date_from = request.args.get("date_from", None)
+    date_to = request.args.get("date_to", None)
+    
+    if date_from or date_to:
+        filter_type = "custom"
+    
+    filtered = get_filtered_transactions(filter_type, date_str, date_from, date_to)
+    grouped = group_transactions_by_date(filtered)
+    
+    total_income = sum(t["amount"] for t in filtered if t["type"] == "income")
+    total_expense = sum(t["amount"] for t in filtered if t["type"] == "expense")
+    
+    return render_template("history.html",
+                           grouped=grouped,
+                           filter_type=filter_type,
+                           date_str=date_str,
+                           date_from=date_from,
+                           date_to=date_to,
+                           total_income=total_income,
+                           total_expense=total_expense)
 
 @main.route("/add-page")
 def add_page():
