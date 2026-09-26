@@ -1,0 +1,62 @@
+{% extends "base.html" %} {% block title %}Add Transaction{% endblock %} {%
+block top_nav_title %}Add Transaction{% endblock %} {% block content %}
+<form
+  action="{{ url_for('main.add') }}"
+  method="POST"
+  class="bg-white rounded-xl shadow p-4 space-y-4"
+>
+  <div>
+    <label class="text-sm text-gray-600 block mb-1">Amount</label>
+    <input
+      type="number"
+      name="amount"
+      step="0.01"
+      placeholder="0.00"
+      required
+      class="w-full border border-gray-300 rounded-md p-3 text-sm"
+    />
+  </div>
+
+  <div>
+    <label class="text-sm text-gray-600 block mb-1">Type</label>
+    <div class="grid grid-cols-2 gap-2">
+      <label
+        class="flex items-center justify-center border-2 border-gray-200 rounded-md p-3 cursor-pointer has-[:checked]:border-green-500 has-[:checked]:bg-green-50"
+      >
+        <input
+          type="radio"
+          name="t_type"
+          value="income"
+          class="hidden"
+          required
+        />
+        <span class="text-sm font-medium text-green-600">💚 Income</span>
+      </label>
+      <label
+        class="flex items-center justify-center border-2 border-gray-200 rounded-md p-3 cursor-pointer has-[:checked]:border-red-500 has-[:checked]:bg-red-50"
+      >
+        <input type="radio" name="t_type" value="expense" class="hidden" />
+        <span class="text-sm font-medium text-red-600">❤️ Expense</span>
+      </label>
+    </div>
+  </div>
+
+  <div>
+    <label class="text-sm text-gray-600 block mb-1">Category</label>
+    <input
+      type="text"
+      name="category"
+      placeholder="e.g. food, rent, salary"
+      required
+      class="w-full border border-gray-300 rounded-md p-3 text-sm"
+    />
+  </div>
+
+  <button
+    type="submit"
+    class="w-full bg-gray-800 hover:bg-gray-900 text-white py-3 rounded-md text-sm font-medium"
+  >
+    Add Transaction
+  </button>
+</form>
+{% endblock %}

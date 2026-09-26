@@ -1,0 +1,53 @@
+{% extends "base.html" %} {% block title %}Settings{% endblock %} {% block
+top_nav_title %}Settings{% endblock %} {% block content %}
+<h2 class="text-md font-semibold text-gray-700 mb-3">Set Budget Limits</h2>
+
+<form
+  action="{{ url_for('main.settings') }}"
+  method="POST"
+  class="bg-white rounded-xl shadow p-4 space-y-4 mb-6"
+>
+  <div>
+    <label class="text-sm text-gray-600 block mb-1">Category</label>
+    <input
+      list="categories"
+      name="category"
+      placeholder="e.g. food"
+      required
+      class="w-full border border-gray-300 rounded-md p-3 text-sm"
+    />
+    <datalist id="categories">
+      {% for cat in categories %}
+      <option value="{{ cat }}">{% endfor %}</option>
+    </datalist>
+  </div>
+  <div>
+    <label class="text-sm text-gray-600 block mb-1">Monthly Budget Limit</label>
+    <input
+      type="number"
+      name="amount"
+      step="0.01"
+      placeholder="0.00"
+      required
+      class="w-full border border-gray-300 rounded-md p-3 text-sm"
+    />
+  </div>
+  <button
+    type="submit"
+    class="w-full bg-gray-800 hover:bg-gray-900 text-white py-3 rounded-md text-sm font-medium"
+  >
+    Save Budget
+  </button>
+</form>
+
+{% if budgets %}
+<h2 class="text-md font-semibold text-gray-700 mb-3">Current Budgets</h2>
+<ul class="space-y-2">
+  {% for category, amount in budgets.items() %}
+  <li class="bg-white rounded-lg shadow p-3 flex justify-between text-sm">
+    <span class="text-gray-600">{{ category }}</span>
+    <span class="font-medium text-gray-800">{{ amount }}/month</span>
+  </li>
+  {% endfor %}
+</ul>
+{% endif %} {% endblock %}

@@ -5,13 +5,70 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{% block title %}Money App{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      .gauge-ring {
+        transform: rotate(-90deg);
+        transform-origin: 50% 50%;
+      }
+    </style>
   </head>
-  <body class="bg-gray-100 min-h-screen">
-    <nav class="bg-gray-800 text-white p-4 mb-6">
-      <div class="max-w-xl mx-auto font-semibold text-lg">💰 Money App</div>
+  <body class="bg-gray-100 min-h-screen pb-20">
+    <!-- Top Navbar -->
+    <nav class="bg-white p-4 sticky top-0 z-10">
+      <div class="max-w-xl mx-auto flex justify-between items-center">
+        <span class="text-xl">🔔</span>
+        <span class="font-bold text-lg text-black">Money App</span>
+        <span class="text-xl">📥</span>
+      </div>
     </nav>
+
+    <!-- Top Filter Tabs (only shown on pages that need it) -->
+    {% block top_tabs %}{% endblock %}
+
+    <!-- Page Content -->
     <div class="max-w-xl mx-auto p-4 sm:p-6">
       {% block content %}{% endblock %}
     </div>
+
+    <!-- Bottom Navbar -->
+    <nav
+      class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-10"
+    >
+      <div class="max-w-xl mx-auto flex justify-around items-center py-2">
+        <a
+          href="{{ url_for('main.home') }}"
+          class="flex flex-col items-center text-xs {{ 'text-gray-800 font-semibold' if request.endpoint == 'main.home' else 'text-gray-400' }}"
+        >
+          <span class="text-xl">🏠</span>Home
+        </a>
+        <a
+          href="{{ url_for('main.history') }}"
+          class="flex flex-col items-center text-xs {{ 'text-gray-800 font-semibold' if request.endpoint == 'main.history' else 'text-gray-400' }}"
+        >
+          <span class="text-xl">📋</span>History
+        </a>
+        <a
+          href="{{ url_for('main.add_page') }}"
+          class="flex flex-col items-center text-xs"
+        >
+          <span
+            class="text-2xl bg-gray-800 text-white rounded-full w-12 h-12 flex items-center justify-center -mt-4 shadow-lg"
+            >➕</span
+          >
+        </a>
+        <a
+          href="{{ url_for('main.analytics') }}"
+          class="flex flex-col items-center text-xs {{ 'text-gray-800 font-semibold' if request.endpoint == 'main.analytics' else 'text-gray-400' }}"
+        >
+          <span class="text-xl">📊</span>Analytics
+        </a>
+        <a
+          href="{{ url_for('main.settings') }}"
+          class="flex flex-col items-center text-xs {{ 'text-gray-800 font-semibold' if request.endpoint == 'main.settings' else 'text-gray-400' }}"
+        >
+          <span class="text-xl">⚙️</span>Settings
+        </a>
+      </div>
+    </nav>
   </body>
 </html>

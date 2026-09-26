@@ -1,10 +1,15 @@
 import json
 import os
+from datetime import datetime, timedelta, date
 
 DATA_FILE = os.path.join(os.path.dirname(__file__), '..', 'data', 'transactions.json')
+BUDGET_FILE = os.path.join(os.path.dirname(__file__), '..', 'data', 'budgets.json')
 
 transactions = []
+budgets = {}
 
+
+# Transaction Models
 def load_transactions():
     global transactions
     try:
@@ -41,7 +46,8 @@ def add_transaction(amount, t_type, category):
         "id": new_id,
         "amount": amount,
         "type": t_type,
-        "category": category
+        "category": category,
+        "date": date.today().isoformat()
     }
     transactions.append(transaction)
 
@@ -66,17 +72,77 @@ def get_balance():
     return balance
 
 def spending_by_category():
-    totals = {}
+    totals = {
+        "income": {},
+        "expense": {}
+    }
     for t in transactions:
-        if t["type"] == "expense":
-            category = t["category"]
-            if category in totals:
-                totals[category] += t["amount"]
-            else:
-                totals[category] = t["amount"]
+        transaction_type = t["type"]
+        category = t["category"]
+        amount = t["amount"]
+
+        if category in totals[transaction_type]:
+            totals[transaction_type][category] += amount
+        else:
+            totals[transaction_type][category] = amount
+            
     return totals
 
 def show_category_totals():
     totals = spending_by_category()
     for category, amount in totals.items():
         print(category, ":", amount)
+        
+# Budget Models
+
+def load_budgets():
+    global budgets
+    try:
+        with open(BUDGET_FILE, "r") as file:
+            budgets = json.load(file)
+    except FileNotFoundError:
+        budgets = {}
+        
+def save_budgets():
+    os.makedirs(os.path.dirname(BUDGET_FILE), exist_ok=True)
+    with open(BUDGET_FILE, "w") as file:
+        json.dump(budgets, file)
+
+def get_budgets():
+    return budgets
+
+def set_budget(category, amount):
+    budgets[category] = amount
+    
+# Home Page
+def get_recent_transactions(n=5):
+    return sorted(transactions, key=lambda t: t.get("date", ""), reverse=True)[:n]
+
+def get_transactions_by_date(date_str):
+    return [t for t in transactions if t.get("date") == date_str]
+
+def get_weekly_totals():
+    today = datetime.now().date()
+    result = []
+    for i in range(6, -1, -1):
+        day = today - timedelta(days=i)
+        day_str = day.strftime("%Y-%m-%d")
+        day_transactions = [t for t in transactions if t.get("date") == day_str]
+        income = sum(t["amount"] for t in day_transactions if t["type"] == "income")
+        expense = sum(t["amount"] for t in day_transactions if t["type"] == "expense")
+        result.append({
+            "day": day.strftime("%a"),
+            "date": day_str,
+            "income": income,
+            "expense": expense
+        })
+    return result
+
+def get_today_stats():
+    today = date.today()
+    today_t = [t for t in transactions if date.fromisoformat(t.get("date")) == today]
+    income = sum(t["amount"] for t in today_t if t["type"] == "income")
+    expense = sum(t["amount"] for t in today_t if t["type"] == "expense")
+    return {"income": income, "expense": expense}
+
+#end of homepage

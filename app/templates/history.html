@@ -1,0 +1,51 @@
+{% extends "base.html" %} {% block title %}History{% endblock %} {% block
+top_nav_title %}History{% endblock %} {% block top_tabs %}
+<div class="bg-white border-b border-gray-200 sticky top-14 z-10">
+  <div class="max-w-xl mx-auto flex">
+    <a
+      href="{{ url_for('main.history') }}?filter=all"
+      class="flex-1 text-center py-3 text-sm font-medium {{ 'border-b-2 border-gray-800 text-gray-800' if filter_type == 'all' else 'text-gray-400' }}"
+      >All</a
+    >
+    <a
+      href="{{ url_for('main.history') }}?filter=income"
+      class="flex-1 text-center py-3 text-sm font-medium {{ 'border-b-2 border-green-500 text-green-500' if filter_type == 'income' else 'text-gray-400' }}"
+      >Income</a
+    >
+    <a
+      href="{{ url_for('main.history') }}?filter=outcome"
+      class="flex-1 text-center py-3 text-sm font-medium {{ 'border-b-2 border-red-500 text-red-500' if filter_type == 'outcome' else 'text-gray-400' }}"
+      >Outcome</a
+    >
+  </div>
+</div>
+{% endblock %} {% block content %}
+<ul class="space-y-2">
+  {% for t in transactions %}
+  <li class="bg-white rounded-lg shadow p-3 flex justify-between items-center">
+    <span class="text-sm text-gray-700">
+      <span
+        class="font-medium {{ 'text-green-600' if t.type == 'income' else 'text-red-600' }}"
+      >
+        {{ '+' if t.type == 'income' else '-' }}{{ t.amount }}
+      </span>
+      · {{ t.category }}
+    </span>
+    <span class="flex gap-2">
+      <a
+        href="{{ url_for('main.edit_form', t_id=t.id) }}"
+        class="text-xs bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md"
+        >Edit</a
+      >
+      <a
+        href="{{ url_for('main.delete', t_id=t.id) }}"
+        class="text-xs bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md"
+        >Delete</a
+      >
+    </span>
+  </li>
+  {% endfor %} {% if not transactions %}
+  <li class="text-center text-gray-400 text-sm py-8">No transactions found.</li>
+  {% endif %}
+</ul>
+{% endblock %}

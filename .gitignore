@@ -4,3 +4,4 @@ data/
 venv/
 .vscode/
 app/__pycache__/
+node_modules/
