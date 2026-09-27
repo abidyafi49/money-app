@@ -34,6 +34,15 @@ block content %}
     required
     class="w-full border border-gray-300 rounded-md p-2 text-sm"
   />
+
+  <div>
+    <label class="text-sm text-gray-600 block mb-1">
+        <i class="fa-solid fa-calendar mr-1 text-blue-500"></i>Date
+    </label>
+    <input type="date" name="date"
+           value="{{ transaction.get('date', today) }}"
+           class="w-full border border-gray-300 rounded-md p-3 text-sm">
+</div>
   <button
     type="submit"
     class="w-full bg-gray-800 hover:bg-gray-900 text-white py-2 rounded-md text-sm font-medium"

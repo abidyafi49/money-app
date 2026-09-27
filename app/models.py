@@ -37,7 +37,7 @@ def get_transaction(t_id):
             return t
     return None
 
-def add_transaction(amount, t_type, category):
+def add_transaction(amount, t_type, category, transaction_date=None):
     if transactions:
         new_id = max(t["id"] for t in transactions) + 1
     else:
@@ -47,16 +47,17 @@ def add_transaction(amount, t_type, category):
         "amount": amount,
         "type": t_type,
         "category": category,
-        "date": date.today().isoformat()
+        "date": transaction_date if transaction_date else date.today().isoformat() 
     }
     transactions.append(transaction)
 
-def update_transaction(t_id, amount, t_type, category):
+def update_transaction(t_id, amount, t_type, category, date=None):
     for t in transactions:
         if t["id"] == t_id:
             t["amount"] = amount
             t["type"] = t_type
             t["category"] = category
+            t["date"] = date if date else date.today().isoformat()
 
 def delete_transaction(t_id):
     global transactions

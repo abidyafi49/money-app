@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for
+from datetime import datetime
 from app.models import (
     load_transactions, save_transactions, get_transactions,
     get_transaction, add_transaction, update_transaction,
@@ -50,6 +51,7 @@ def history():
 
 @main.route("/add-page")
 def add_page():
+    today = datetime.now().isoformat()
     return render_template("add.html")
 
 @main.route("/add", methods=["POST"])
@@ -57,7 +59,9 @@ def add():
     amount = float(request.form["amount"])
     t_type = request.form["t_type"]
     category = request.form["category"]
-    add_transaction(amount, t_type, category)
+    date = request.form.get("date") or None
+    load_transactions()
+    add_transaction(amount, t_type, category, date)
     save_transactions()
     return redirect(url_for("main.home"))
 
@@ -65,6 +69,7 @@ def add():
 def edit_form(t_id):
     load_transactions()
     transaction = get_transaction(t_id)
+    today = datetime.now().isoformat()
     return render_template("edit.html", transaction=transaction)
 
 @main.route("/update/<int:t_id>", methods=["POST"])
@@ -73,7 +78,8 @@ def update(t_id):
     amount = float(request.form["amount"])
     t_type = request.form["t_type"]
     category = request.form["category"]
-    update_transaction(t_id, amount, t_type, category)
+    date = request.form.get("date") or None
+    update_transaction(t_id, amount, t_type, category, date)
     save_transactions()
     return redirect(url_for("main.home"))
 
